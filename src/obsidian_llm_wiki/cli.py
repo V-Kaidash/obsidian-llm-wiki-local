@@ -55,7 +55,24 @@ def _load_config(vault_str: str | None, **kwargs):
             err=True,
         )
         sys.exit(1)
-    return Config.from_vault(Path(vault_str), **kwargs)
+    vault_path = Path(vault_str).expanduser().resolve()
+    if not vault_path.exists():
+        click.echo(
+            f"Error: vault path does not exist: {vault_path}\n"
+            f"Run `olw init {vault_path}` to create it, or re-run `olw setup` "
+            f"to update the default vault.",
+            err=True,
+        )
+        sys.exit(1)
+    if not vault_path.is_dir():
+        click.echo(
+            f"Error: vault path is not a directory: {vault_path}\n"
+            "A vault is a directory containing wiki.toml. "
+            "Point --vault / OLW_VAULT at the parent directory instead.",
+            err=True,
+        )
+        sys.exit(1)
+    return Config.from_vault(vault_path, **kwargs)
 
 
 def _load_db(config):
