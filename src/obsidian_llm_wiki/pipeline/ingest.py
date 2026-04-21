@@ -388,7 +388,7 @@ def ingest_note(
     rel_path = str(path.relative_to(config.vault))
     record = db.get_raw(rel_path)
 
-    if record and record.status == "ingested" and not force:
+    if record and record.status in ("ingested", "compiled") and not force:
         log.info("Already ingested: %s", path.name)
         return None
 

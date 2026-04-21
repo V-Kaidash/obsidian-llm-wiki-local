@@ -232,6 +232,18 @@ def test_ingest_note_skip_already_ingested(vault, config, db):
     assert client.generate.call_count == 1
 
 
+def test_ingest_note_skip_already_compiled(vault, config, db):
+    """Notes with status 'compiled' should be skipped without --force."""
+    path = _write_raw(vault, "compiled.md", "# Compiled\n\nContent.")
+    client = _make_client(_analysis_json())
+    ingest_note(path, config, client, db)
+    # Simulate compile stage marking the note as compiled
+    db.mark_raw_status(str(path.relative_to(config.vault)), "compiled")
+    result = ingest_note(path, config, client, db)
+    assert result is None
+    assert client.generate.call_count == 1
+
+
 def test_ingest_note_force_reingest(vault, config, db):
     path = _write_raw(vault, "forceme.md", "# Force\n\nContent.")
     client = _make_client(_analysis_json())
